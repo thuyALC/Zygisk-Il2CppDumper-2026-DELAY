@@ -1,0 +1,37 @@
+name: Build Zygisk Module
+
+on:
+  workflow_dispatch: # Cho phép bạn bấm nút "Run workflow" chạy bằng tay
+  push:
+    branches:
+      - master
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive' # Cực kỳ quan trọng để tải kèm bộ thư viện Zygisk (nếu có)
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17' # Phiên bản Java chuẩn để build Android hiện nay
+
+      - name: Cấp quyền thực thi cho Gradle
+        run: chmod +x gradlew
+
+      - name: Build Module (Release)
+        run: ./gradlew assembleRelease
+
+      - name: Upload Artifact (File ZIP)
+        uses: actions/upload-artifact@v4
+        with:
+          name: Zygisk-Il2CppDumper-Delay60s
+          # Các module Magisk/KernelSU build bằng Gradle thường xuất file zip ra thư mục out/
+          path: out/*.zip
